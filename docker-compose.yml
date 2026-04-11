@@ -1,0 +1,60 @@
+version: "3"
+
+services:
+
+  mongo:
+    image: mongo:latest
+    restart: always
+    container_name: vpn-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: vpnbot
+      MONGO_INITDB_ROOT_PASSWORD: vovan123A
+      MONGO_INITDB_DATABASE: vpn_bot
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - vpn-network
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+        ME_CONFIG_MONGODB_ADMINUSERNAME: vpnbot
+        ME_CONFIG_MONGODB_ADMINPASSWORD: vovan123A
+        ME_CONFIG_MONGODB_URL: mongodb://vpnbot:vovan123A@mongo:27017/
+        ME_CONFIG_BASICAUTH_ENABLED: true
+        ME_CONFIG_BASICAUTH_USERNAME: admin
+        ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongo
+    networks:
+      - vpn-network
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vpn-bot
+    restart: always
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      MONGO_URL: mongodb://vpnbot:vovan123A@mongo:27017/vpn_bot?authSource=admin
+      MONGO_DB: tgbot
+    depends_on:
+      - mongo
+    networks:
+      - vpn-network
+    volumes:
+      - ./configs:/app/config
+      - ./logs:/app/logs
+
+networks:
+  vpn-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
