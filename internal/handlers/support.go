@@ -192,7 +192,7 @@ func (h *Handler) ProcessReportApprov(c tele.Context, state fsm.Context) error {
 		return c.Send("Ошибка " + err.Error())
 	}
 
-	if err := reportRepo.Create(ctx, &report); err != nil {
+	if err := reportRepo.Insert(ctx, &report); err != nil {
 		return c.Send("Ошибка " + err.Error())
 	}
 

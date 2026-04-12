@@ -27,24 +27,38 @@ func GetNavigationButtonsReport(status models.ReportStatus, current, total int) 
 
 	markup := &tele.ReplyMarkup{}
 
-	var buttons []tele.Btn
+	var rows []tele.Row
 
+	var navRow []tele.Btn
 	if current > 1 {
 		btnPrev := markup.Data("Назад", fmt.Sprintf("admin_report_%s_%d", status, current-1))
-		buttons = append(buttons, btnPrev)
+		navRow = append(navRow, btnPrev)
 	}
-
 	if current < total {
 		btnNext := markup.Data("Вперед", fmt.Sprintf("admin_report_%s_%d", status, current+1))
-		buttons = append(buttons, btnNext)
+		navRow = append(navRow, btnNext)
 	}
 
-	btnMenu := markup.Data("Назад в меню", "admin_report_menu")
+	if len(navRow) > 0 {
+		rows = append(rows, navRow)
+	}
 
-	markup.Inline(
-		markup.Row(buttons...),
-		markup.Row(btnMenu),
-	)
+	switch status {
+	case models.ReportStatusNew:
+		rows = append(rows, []tele.Btn{
+			markup.Data("Взять в работу", fmt.Sprintf("admin_report_hire_%d", current)),
+		})
+	case models.ReportStatusInProgress:
+		rows = append(rows, []tele.Btn{
+			markup.Data("Ответить", fmt.Sprintf("admir_report_answer_%d", current)),
+		})
+	}
+
+	rows = append(rows, []tele.Btn{
+		markup.Data("Назад в меню", "admin_report_menu"),
+	})
+
+	markup.Inline(rows...)
 
 	return markup
 }

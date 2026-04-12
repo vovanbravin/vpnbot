@@ -18,7 +18,7 @@ func NewReportRepository(db *database.MongoDB) *ReportRepository {
 	return &ReportRepository{db.GetCollection("reports")}
 }
 
-func (r *ReportRepository) Create(ctx context.Context, report *models.Report) error {
+func (r *ReportRepository) Insert(ctx context.Context, report *models.Report) error {
 	_, err := r.collection.InsertOne(ctx, report)
 	return err
 }
@@ -93,4 +93,12 @@ func (r *ReportRepository) GetAllByStatus(ctx context.Context, status models.Rep
 	}
 
 	return reports, nil
+}
+
+func (r *ReportRepository) Update(ctx context.Context, report models.Report) error {
+	filter := bson.M{"_id": report.ID}
+	update := bson.M{"$set": report}
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+
+	return err
 }
