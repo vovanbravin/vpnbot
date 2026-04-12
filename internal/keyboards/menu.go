@@ -1,12 +1,16 @@
 package keyboards
 
-import tele "gopkg.in/telebot.v4"
+import (
+	"tgbot/internal/message"
+
+	tele "gopkg.in/telebot.v4"
+)
 
 var (
 	MainMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
 
-	BtnBuyVpn = MainMenu.Text("Купить vpn")
-	BtnMyVpn  = MainMenu.Text("Мой vpn")
+	BtnBuyVpn = MainMenu.Text(message.ButtonBuyVpn)
+	BtnMyVpn  = MainMenu.Text(message.ButtonMyTariff)
 )
 
 func init() {
