@@ -47,11 +47,11 @@ func GetNavigationButtonsReport(status models.ReportStatus, current, total int) 
 	switch status {
 	case models.ReportStatusNew:
 		rows = append(rows, []tele.Btn{
-			markup.Data("Взять в работу", fmt.Sprintf("admin_report_hire_%d", current)),
+			markup.Data(message.ButtonHire, fmt.Sprintf("admin_report_hire_%d", current)),
 		})
 	case models.ReportStatusInProgress:
 		rows = append(rows, []tele.Btn{
-			markup.Data("Ответить", fmt.Sprintf("admir_report_answer_%d", current)),
+			markup.Data(message.ButtonAnswer, fmt.Sprintf("admir_report_answer_%d", current)),
 		})
 	}
 

@@ -18,4 +18,6 @@ const (
 	ButtonMenu              = "Назад в меню"
 	ButtonBuyVpn            = "Купить vpn"
 	ButtonMyTariff          = "Мой тариф"
+	ButtonHire              = "Взять в работу"
+	ButtonAnswer            = "Ответить"
 )
