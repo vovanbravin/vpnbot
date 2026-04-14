@@ -18,10 +18,9 @@ type Handler struct {
 	mongoDb    *database.MongoDB
 }
 
-func New(bot *tele.Bot, fsm *fsm.Manager, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB) *Handler {
+func New(bot *tele.Bot, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB) *Handler {
 	return &Handler{
 		bot:        bot,
-		fsm:        fsm,
 		dispatcher: dispatcher,
 		mongoDb:    mongoDb,
 	}
@@ -39,8 +38,6 @@ func (h *Handler) HandleText(c tele.Context) error {
 	text := strings.TrimSpace(c.Text())
 
 	switch text {
-	case "Поддержка":
-		return h.Support(c)
 	default:
 		return nil
 	}
