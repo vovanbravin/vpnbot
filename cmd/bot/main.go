@@ -4,12 +4,11 @@ import (
 	"log"
 	"os"
 	"tgbot/internal/database"
+	fsm "tgbot/internal/fsm"
 	"tgbot/internal/handlers"
 	"time"
 
 	"github.com/subosito/gotenv"
-	"github.com/vitaliy-ukiru/fsm-telebot/v2"
-	"github.com/vitaliy-ukiru/fsm-telebot/v2/pkg/storage/memory"
 	"github.com/vitaliy-ukiru/telebot-filter/v2/dispatcher"
 	tele "gopkg.in/telebot.v4"
 )
@@ -64,14 +63,15 @@ func main() {
 		log.Fatalf("Error to set commands: %v", err)
 	}
 
-	storage := memory.NewStorage()
-	fsm := fsm.New(storage)
+	FSM := fsm.NewFSM(mongoDb)
 
 	g := bot.Group()
-	g.Use(fsm.WrapContext)
+	g.Use(FSM.Manager.WrapContext)
 	dp := dispatcher.NewDispatcher(g)
 
-	h := handlers.New(bot, fsm, dp, mongoDb)
+	FSM.Setup(dp)
+
+	h := handlers.New(bot, dp, mongoDb)
 	h.Register()
 
 	bot.Start()
