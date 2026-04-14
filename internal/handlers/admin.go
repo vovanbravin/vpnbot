@@ -8,6 +8,7 @@ import (
 	"tgbot/internal/database/models"
 	"tgbot/internal/database/repositories"
 	"tgbot/internal/keyboards"
+	"tgbot/internal/message"
 	"time"
 
 	tele "gopkg.in/telebot.v4"
@@ -42,7 +43,7 @@ func (h *Handler) HandleAdminCallback(c tele.Context) error {
 		return h.ReportAdminMenu(c)
 
 	default:
-		return c.Send("Неизвестная команда")
+		return c.Bot().Respond(c.Callback(), &tele.CallbackResponse{Text: message.UnknownCommand})
 	}
 }
 
@@ -57,7 +58,7 @@ func (h *Handler) HandleAdmin() {
 }
 
 func (h *Handler) IsAdmin(c tele.Context) error {
-	return c.Send("Вы админ")
+	return c.Send(message.IsAdmin)
 }
 
 func (h *Handler) ReportAdminMenu(c tele.Context) error {
@@ -69,22 +70,22 @@ func (h *Handler) ReportAdminMenu(c tele.Context) error {
 
 	newCount, err := reportRepo.CountByStatus(ctx, models.ReportStatusNew)
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	inProgressCount, err := reportRepo.CountByStatus(ctx, models.ReportStatusInProgress)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	resolvedCount, err := reportRepo.CountByStatus(ctx, models.ReportStatusResolved)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
-	return c.EditOrSend("🈸 Заявки", keyboards.GetReportAdminMenu(newCount, inProgressCount, resolvedCount))
+	return c.EditOrSend(message.TitleMenuReports, keyboards.GetReportAdminMenu(newCount, inProgressCount, resolvedCount))
 }
 
 func (h *Handler) ReportShowAdmin(c tele.Context, status models.ReportStatus, current int) error {
@@ -96,7 +97,7 @@ func (h *Handler) ReportShowAdmin(c tele.Context, status models.ReportStatus, cu
 	reports, err := reportRepo.GetAllByStatus(ctx, status)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	return c.Edit(reports[current-1].DetailInfo(), keyboards.GetNavigationButtonsReport(status, current, len(reports)))
@@ -112,7 +113,7 @@ func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) er
 	reports, err := reportRepo.GetAllByStatus(ctx, status)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	if len(reports) == 0 {
@@ -134,7 +135,7 @@ func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
 	reports, err := reportRepo.GetAllByStatus(ctx, models.ReportStatusNew)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	report := reports[current-1]
@@ -144,7 +145,7 @@ func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
 	err = reportRepo.Update(ctx, report)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ErrorText + err.Error())
 	}
 
 	if len(reports) == 1 {

@@ -1,14 +1,16 @@
 package keyboards
 
 import (
+	"tgbot/internal/message"
+
 	tele "gopkg.in/telebot.v4"
 )
 
 var (
 	SupportMenu = &tele.ReplyMarkup{}
 
-	BtnNewReport = SupportMenu.Data("Новое заявление", "report_new")
-	BtnMyReports = SupportMenu.Data("Мои заявления", "report_my")
+	BtnNewReport = SupportMenu.Data(message.ButtonNewReport, "report_new")
+	BtnMyReports = SupportMenu.Data(message.ButtonMyReport, "report_my")
 )
 
 func init() {
@@ -20,11 +22,11 @@ func init() {
 func GetReportCategoriesKeyboard() *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 
-	btnTechnical := markup.Data("Техническая проблема", "report_category_technical")
-	btnPayment := markup.Data("Проблемы с оплатой", "report_category_payment")
-	btnConnection := markup.Data("Проблемы с подключением", "report_category_connection")
-	btnFeature := markup.Data("Предложения", "report_category_feature")
-	btnOther := markup.Data("Другое", "report_category_other")
+	btnTechnical := markup.Data(message.ButtonTechnical, "report_category_technical")
+	btnPayment := markup.Data(message.ButtonPayment, "report_category_payment")
+	btnConnection := markup.Data(message.ButtonConnection, "report_category_connection")
+	btnFeature := markup.Data(message.ButtonFeature, "report_category_feature")
+	btnOther := markup.Data(message.ButtonOther, "report_category_other")
 
 	markup.Inline(
 		markup.Row(btnTechnical),
@@ -40,8 +42,8 @@ func GetReportCategoriesKeyboard() *tele.ReplyMarkup {
 func GetReportConfirmKeyboard() *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 
-	btnApprov := markup.Data("Все верно", "report_approv")
-	btnRestart := markup.Data("Начать сначала", "report_restart")
+	btnApprov := markup.Data(message.ButtonApprov, "report_approv")
+	btnRestart := markup.Data(message.ButtonRestart, "report_restart")
 
 	markup.Inline(
 		markup.Row(btnApprov),

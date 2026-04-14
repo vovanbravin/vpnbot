@@ -3,6 +3,7 @@ package handlers
 import (
 	"strings"
 	"tgbot/internal/database"
+	"tgbot/internal/message"
 
 	"github.com/vitaliy-ukiru/fsm-telebot/v2"
 	"github.com/vitaliy-ukiru/telebot-filter/v2/dispatcher"
@@ -53,6 +54,6 @@ func (h *Handler) HandleCallbacks(c tele.Context) error {
 	case strings.HasPrefix(data, "admin_"):
 		return h.HandleAdminCallback(c)
 	default:
-		return c.Send("Неизвестная команда")
+		return c.Bot().Respond(c.Callback(), &tele.CallbackResponse{Text: message.UnknownCommand})
 	}
 }

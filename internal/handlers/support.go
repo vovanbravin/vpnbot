@@ -7,6 +7,7 @@ import (
 	"tgbot/internal/database/models"
 	"tgbot/internal/database/repositories"
 	"tgbot/internal/keyboards"
+	"tgbot/internal/message"
 	"tgbot/internal/utils"
 	"time"
 
@@ -76,10 +77,10 @@ func (h *Handler) HandleSupport() {
 
 func (h *Handler) StartReport(c tele.Context, state fsm.Context) error {
 	if err := state.SetState(context.Background(), StateReportCategory); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportCategoryPrompt)
 	}
 
-	return c.Send("Выберете категорию проблемы:", keyboards.GetReportCategoriesKeyboard())
+	return c.Send(message.ReportCategoryPrompt, keyboards.GetReportCategoriesKeyboard())
 }
 
 func (h *Handler) ProcessReportCategory(c tele.Context, state fsm.Context) error {
@@ -91,14 +92,14 @@ func (h *Handler) ProcessReportCategory(c tele.Context, state fsm.Context) error
 	}
 
 	if err := state.Update(context.Background(), "data", data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportSubjectPrompt)
 	}
 
 	if err := state.SetState(context.Background(), StateReportSubject); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportSubjectPrompt)
 	}
 
-	return c.EditOrSend("Напишите тему проблемы")
+	return c.EditOrSend(message.ReportSubjectPrompt)
 }
 
 func (h *Handler) ProcessReportSubject(c tele.Context, state fsm.Context) error {
@@ -108,51 +109,43 @@ func (h *Handler) ProcessReportSubject(c tele.Context, state fsm.Context) error 
 	data := ReportData{}
 
 	if err := state.Data(context.Background(), "data", &data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportMessagePrompt)
 	}
 
 	data.Subject = subject
 
 	if err := state.Update(context.Background(), "data", data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportMessagePrompt)
 	}
 
 	if err := state.SetState(context.Background(), StateReportMessage); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportMessagePrompt)
 	}
 
-	return c.EditOrSend("Опишите проблему")
+	return c.EditOrSend(message.ReportMessagePrompt)
 }
 
 func (h *Handler) ProcessReportMessage(c tele.Context, state fsm.Context) error {
 
-	message := strings.TrimSpace(c.Text())
+	messag := strings.TrimSpace(c.Text())
 
 	data := ReportData{}
 
 	if err := state.Data(context.Background(), "data", &data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportConfirmText(data.Category, data.Subject, data.Message))
 	}
 
-	data.Message = message
+	data.Message = messag
 
 	if err := state.Update(context.Background(), "data", data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportConfirmText(data.Category, data.Subject, data.Message))
 	}
 
 	if err := state.SetState(context.Background(), StateReportConfirm); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportConfirmText(data.Category, data.Subject, data.Message))
 	}
 
-	var result string
-
-	category := utils.GetCategoryByName(data.Category)
-
-	result += "📂 Категория: " + category + "\n"
-	result += "📝 Тема: " + data.Subject + "\n"
-	result += "📄 Описание: " + data.Message + "\n"
-
-	return c.EditOrSend(result, keyboards.GetReportConfirmKeyboard())
+	return c.EditOrSend(message.ReportConfirmText(data.Category, data.Subject, data.Message), keyboards.GetReportConfirmKeyboard())
 }
 
 func (h *Handler) ProcessReportApprov(c tele.Context, state fsm.Context) error {
@@ -160,7 +153,7 @@ func (h *Handler) ProcessReportApprov(c tele.Context, state fsm.Context) error {
 	data := ReportData{}
 
 	if err := state.Data(context.Background(), "data", &data); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportCreated)
 	}
 
 	reportRepo := repositories.NewReportRepository(h.mongoDb)
@@ -189,18 +182,18 @@ func (h *Handler) ProcessReportApprov(c tele.Context, state fsm.Context) error {
 	}
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportCreated)
 	}
 
 	if err := reportRepo.Insert(ctx, &report); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportCreated)
 	}
 
 	if err := state.Finish(context.Background(), true); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportCreated)
 	}
 
-	return c.EditOrSend("Заявление создано")
+	return c.EditOrSend(message.ReportCreated)
 }
 
 func (h *Handler) ProcessReportConfirm(c tele.Context, state fsm.Context) error {
@@ -214,12 +207,12 @@ func (h *Handler) ProcessReportConfirm(c tele.Context, state fsm.Context) error 
 	case "restart":
 		return h.StartReport(c, state)
 	default:
-		return c.Send("Неизвесная опция")
+		return c.Send(message.UnknownOption)
 	}
 }
 
 func (h *Handler) Support(c tele.Context) error {
-	return c.Send("Выберете опцию: ", keyboards.SupportMenu)
+	return c.Send(message.SupportMenuPrompt, keyboards.SupportMenu)
 }
 
 func (h *Handler) MyReports(c tele.Context) error {
@@ -233,10 +226,8 @@ func (h *Handler) MyReports(c tele.Context) error {
 	reports, err := reportRes.GetAllReportByUserId(ctx, user_id)
 
 	if err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.NoReports)
 	}
-
-	result := ""
 
 	for i, report := range reports {
 		if i == 0 {
@@ -246,16 +237,16 @@ func (h *Handler) MyReports(c tele.Context) error {
 		}
 	}
 
-	return c.Send(result)
+	return nil
 }
 
 func (h *Handler) StartInfoReport(c tele.Context, state fsm.Context) error {
 
 	if err := state.SetState(context.Background(), StateReportNumber); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportNumberPrompt)
 	}
 
-	return c.Send("Введите номер заявления")
+	return c.Send(message.ReportNumberPrompt)
 }
 
 func (h *Handler) GetInfoReport(c tele.Context, state fsm.Context) error {
@@ -276,13 +267,13 @@ func (h *Handler) GetInfoReport(c tele.Context, state fsm.Context) error {
 
 	if report == nil || report.UserID != c.Sender().ID || err != nil {
 		if err = state.Finish(context.Background(), true); err != nil {
-			return c.Send("Ошибка " + err.Error())
+			return c.Send(message.ReportNotFound)
 		}
-		return c.Send("Заявка не найдена, убедитесь, что вы правильно ввели номер")
+		return c.Send(message.ReportNotFound)
 	}
 
 	if err = state.Finish(context.Background(), true); err != nil {
-		return c.Send("Ошибка " + err.Error())
+		return c.Send(message.ReportNotFound)
 	}
 	return c.Send(report.DetailInfo())
 }

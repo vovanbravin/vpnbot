@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"tgbot/internal/message"
+
 	tf "github.com/vitaliy-ukiru/telebot-filter/v2/telefilter"
 	tele "gopkg.in/telebot.v4"
 )
@@ -15,5 +17,5 @@ func (h *Handler) Start(c tele.Context) error {
 }
 
 func (h *Handler) Help(c tele.Context) error {
-	return c.Send("This help")
+	return c.Send(message.HelpText)
 }
