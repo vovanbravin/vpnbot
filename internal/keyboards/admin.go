@@ -51,7 +51,7 @@ func GetNavigationButtonsReport(status models.ReportStatus, current, total int) 
 		})
 	case models.ReportStatusInProgress:
 		rows = append(rows, []tele.Btn{
-			markup.Data(message.ButtonAnswer, fmt.Sprintf("admir_report_answer_%d", current)),
+			markup.Data(message.ButtonAnswer, fmt.Sprintf("admin_report_answer_%d", current)),
 		})
 	}
 
@@ -60,6 +60,20 @@ func GetNavigationButtonsReport(status models.ReportStatus, current, total int) 
 	})
 
 	markup.Inline(rows...)
+
+	return markup
+}
+
+func GetConfirmButtonAnswer() *tele.ReplyMarkup {
+
+	markup := &tele.ReplyMarkup{}
+
+	btnConfirm := markup.Data(message.ButtonApprov, "admin_answer_confirm")
+	btnRestart := markup.Data(message.ButtonRestart, "admin_answer_restart")
+
+	markup.Inline(
+		markup.Row(btnConfirm, btnRestart),
+	)
 
 	return markup
 }

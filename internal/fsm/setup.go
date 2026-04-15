@@ -22,4 +22,5 @@ func NewFSM(mongoDb *database.MongoDB) *FSM {
 
 func (f *FSM) Setup(dispatcher *dispatcher.Dispatcher) {
 	f.SetupSupport(dispatcher)
+	f.SetupAdmin(dispatcher)
 }
