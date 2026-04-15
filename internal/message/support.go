@@ -12,6 +12,7 @@ const (
 	NoReports            = "📭 У вас пока нет заявок"
 	UnknownOption        = "❌ Неизвестная опция"
 	SupportMenuPrompt    = "🔧 Выберите опцию:"
+	AnswerOnReport       = "📨 На вашу заявку с номером #%d ответили!\n\n👀 Посмотреть ответ вы можете в меню заявок /my_report"
 )
 
 func ReportConfirm(category, subject, message string) string {

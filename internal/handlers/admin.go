@@ -7,6 +7,7 @@ import (
 	"tgbot/internal/database/middleware"
 	"tgbot/internal/database/models"
 	"tgbot/internal/database/repositories"
+	"tgbot/internal/fsm"
 	"tgbot/internal/keyboards"
 	"tgbot/internal/message"
 	"time"
@@ -30,6 +31,19 @@ func (h *Handler) HandleAdminCallback(c tele.Context) error {
 	case strings.HasPrefix(data, "admin_report_hire_"):
 		current, _ := strconv.Atoi(strings.TrimPrefix(data, "admin_report_hire_"))
 		return h.ReportAdminHire(c, current)
+	case strings.HasPrefix(data, "admin_report_answer_"):
+		current, _ := strconv.Atoi(strings.TrimPrefix(data, "admin_report_answer_"))
+
+		state, _ := h.fsm.NewContext(c)
+		if err := state.SetState(context.Background(), fsm.StateAnswer); err != nil {
+			return c.Send(message.ErrorText + err.Error())
+		}
+
+		if err := state.Update(context.Background(), "current", current); err != nil {
+			return c.Send(message.ErrorText + err.Error())
+		}
+
+		return c.EditOrSend(message.EnterAnswer)
 	}
 
 	switch data {

@@ -18,10 +18,11 @@ type Handler struct {
 	mongoDb    *database.MongoDB
 }
 
-func New(bot *tele.Bot, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB) *Handler {
+func New(bot *tele.Bot, fsm *fsm.Manager, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB) *Handler {
 	return &Handler{
 		bot:        bot,
 		dispatcher: dispatcher,
+		fsm:        fsm,
 		mongoDb:    mongoDb,
 	}
 }

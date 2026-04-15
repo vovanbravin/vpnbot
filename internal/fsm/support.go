@@ -36,8 +36,6 @@ func (f *FSM) SetupSupport(dispatcher *dispatcher.Dispatcher) {
 		fsmopt.OnStates(StateReportNumber),
 		fsmopt.Do(f.GetInfoReport))
 
-	dispatcher.Handle("/my_report", tf.RawHandler{Callback: f.MyReports})
-
 	dispatcher.Handle("/new_report", tf.RawHandler{Callback: f.Manager.Adapt(f.StartReport)})
 
 	f.Manager.Bind(
@@ -206,31 +204,6 @@ func (f *FSM) ProcessReportConfirm(c tele.Context, state fsm.Context) error {
 
 func (f *FSM) Support(c tele.Context) error {
 	return c.Send(message.SupportMenuPrompt, keyboards.SupportMenu)
-}
-
-func (f *FSM) MyReports(c tele.Context) error {
-	user_id := c.Sender().ID
-
-	reportRes := repositories.NewReportRepository(f.mongoDb)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	reports, err := reportRes.GetAllReportByUserId(ctx, user_id)
-
-	if err != nil {
-		return c.Send(message.NoReports)
-	}
-
-	for i, report := range reports {
-		if i == 0 {
-			c.Send(report.ShortInfo())
-		} else {
-			c.Bot().Send(c.Chat(), report.ShortInfo())
-		}
-	}
-
-	return nil
 }
 
 func (f *FSM) StartInfoReport(c tele.Context, state fsm.Context) error {

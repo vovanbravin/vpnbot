@@ -5,3 +5,8 @@ type ReportData struct {
 	Subject  string
 	Message  string
 }
+
+type AdminAnswer struct {
+	Current int
+	Answer  string
+}

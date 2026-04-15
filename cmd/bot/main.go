@@ -71,7 +71,7 @@ func main() {
 
 	FSM.Setup(dp)
 
-	h := handlers.New(bot, dp, mongoDb)
+	h := handlers.New(bot, FSM.Manager, dp, mongoDb)
 	h.Register()
 
 	bot.Start()
