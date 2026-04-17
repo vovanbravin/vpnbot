@@ -114,7 +114,7 @@ func (h *Handler) ReportShowAdmin(c tele.Context, status models.ReportStatus, cu
 		return c.Send(message.ErrorText + err.Error())
 	}
 
-	return c.Edit(reports[current-1].DetailInfo(), keyboards.GetNavigationButtonsReport(status, current, len(reports)))
+	return c.Edit(reports[current-1].DetailInfo(), keyboards.GetAdminNavigationButtonsReport(status, current, len(reports)))
 }
 
 func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) error {
@@ -136,7 +136,7 @@ func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) er
 
 	n := len(reports)
 
-	return c.Edit(reports[0].DetailInfo(), keyboards.GetNavigationButtonsReport(status, 1, n))
+	return c.Edit(reports[0].DetailInfo(), keyboards.GetAdminNavigationButtonsReport(status, 1, n))
 }
 
 func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
