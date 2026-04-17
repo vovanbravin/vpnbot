@@ -24,7 +24,7 @@ func GetReportAdminMenu(newCount, inProgressCount, resolvedCount int) *tele.Repl
 	return markup
 }
 
-func GetNavigationButtonsReport(status models.ReportStatus, current, total int) *tele.ReplyMarkup {
+func GetAdminNavigationButtonsReport(status models.ReportStatus, current, total int) *tele.ReplyMarkup {
 
 	markup := &tele.ReplyMarkup{}
 

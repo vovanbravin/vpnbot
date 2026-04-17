@@ -77,7 +77,30 @@ func (r *ReportRepository) CountByStatus(ctx context.Context, status models.Repo
 }
 
 func (r *ReportRepository) GetAllByStatus(ctx context.Context, status models.ReportStatus) ([]models.Report, error) {
-	filter := bson.M{"status": status}
+	return r.GetAllByStatuses(ctx, []models.ReportStatus{status})
+}
+
+func (r *ReportRepository) GetAllByStatuses(ctx context.Context, statuses []models.ReportStatus) ([]models.Report, error) {
+	filter := bson.M{"status": bson.M{"$in": statuses}}
+	cursor, err := r.collection.Find(ctx, filter)
+
+	defer cursor.Close(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var reports []models.Report
+
+	if err = cursor.All(ctx, &reports); err != nil {
+		return nil, err
+	}
+
+	return reports, nil
+}
+
+func (r *ReportRepository) GetAllByStatusesAndUserId(ctx context.Context, userId int64, statuses []models.ReportStatus) ([]models.Report, error) {
+	filter := bson.M{"status": bson.M{"$in": statuses}, "user_id": userId}
 	cursor, err := r.collection.Find(ctx, filter)
 
 	defer cursor.Close(ctx)
