@@ -49,6 +49,7 @@ services:
     networks:
       - vpn-network
     volumes:
+      - ./configs:/app/config
       - ./logs:/app/logs
 
 networks:
