@@ -20,4 +20,6 @@ const (
 	ButtonMyTariff          = "Мой тариф"
 	ButtonHire              = "Взять в работу"
 	ButtonAnswer            = "Ответить"
+	ButtonActiveReports     = "🟡 Активные заявки"
+	ButtonClosedReports     = "✅ Закрытые заявки"
 )

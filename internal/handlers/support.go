@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"tgbot/internal/database/models"
 	"tgbot/internal/database/repositories"
+	"tgbot/internal/keyboards"
 	"tgbot/internal/message"
 	"time"
 
@@ -10,31 +14,89 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
+func (h *Handler) HandleSupportCallbacks(c tele.Context) error {
+	data := strings.TrimSpace(c.Callback().Data)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+
+	defer cancel()
+
+	reportRepo := repositories.NewReportRepository(h.mongoDb)
+
+	switch {
+	case strings.HasPrefix(data, "support_active_report_"):
+		current, _ := strconv.Atoi(strings.TrimPrefix(data, "support_active_report_"))
+		return h.UserShowReport(c, current, true)
+	case strings.HasPrefix(data, "support_closed_report_"):
+		current, _ := strconv.Atoi(strings.TrimPrefix(data, "support_closed_report_"))
+		return h.UserShowReport(c, current, false)
+	}
+
+	switch data {
+	case "support_active_reports":
+		userId := c.Sender().ID
+		reports, err := reportRepo.GetAllByStatusesAndUserId(ctx, userId, []models.ReportStatus{models.ReportStatusNew, models.ReportStatusInProgress})
+
+		if err != nil {
+			return c.Send(message.ErrorText + err.Error())
+		}
+
+		if len(reports) == 0 {
+			return c.Bot().Respond(c.Callback(), &tele.CallbackResponse{Text: message.NoActiveReports})
+		}
+
+		return c.EditOrSend(reports[0].DetailInfo(), keyboards.GetUserNavigationButtonsReport(true, 1, len(reports)))
+
+	case "support_closed_reports":
+		userId := c.Sender().ID
+		reports, err := reportRepo.GetAllByStatusesAndUserId(ctx, userId, []models.ReportStatus{models.ReportStatusResolved})
+
+		if err != nil {
+			return c.Send(message.ErrorText + err.Error())
+		}
+
+		if len(reports) == 0 {
+			return c.Bot().Respond(c.Callback(), &tele.CallbackResponse{Text: message.NoClosedReports})
+		}
+
+		return c.EditOrSend(reports[0].DetailInfo(), keyboards.GetUserNavigationButtonsReport(false, 1, len(reports)))
+
+	case "support_menu":
+		return h.MyReports(c)
+	}
+
+	return c.Send(message.UnknownCommand)
+}
+
 func (h *Handler) HandleSupport() {
 	h.dispatcher.Handle("/my_report", tf.RawHandler{Callback: h.MyReports})
 }
 
 func (h *Handler) MyReports(c tele.Context) error {
-	user_id := c.Sender().ID
+	return c.EditOrSend(message.MyReport, keyboards.GetUserReportMenu())
+}
 
-	reportRes := repositories.NewReportRepository(h.mongoDb)
+func (h *Handler) UserShowReport(c tele.Context, current int, active bool) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	reports, err := reportRes.GetAllReportByUserId(ctx, user_id)
+	reportRepo := repositories.NewReportRepository(h.mongoDb)
+
+	var reports []models.Report
+	var err error
+
+	userId := c.Sender().ID
+
+	if active {
+		reports, err = reportRepo.GetAllByStatusesAndUserId(ctx, userId, []models.ReportStatus{models.ReportStatusNew, models.ReportStatusInProgress})
+	} else {
+		reports, err = reportRepo.GetAllByStatusesAndUserId(ctx, userId, []models.ReportStatus{models.ReportStatusResolved})
+	}
 
 	if err != nil {
-		return c.Send(message.NoReports)
+		return c.Send(message.ErrorText + err.Error())
 	}
 
-	for i, report := range reports {
-		if i == 0 {
-			c.Send(report.ShortInfo())
-		} else {
-			c.Bot().Send(c.Chat(), report.ShortInfo())
-		}
-	}
-
-	return nil
+	return c.EditOrSend(reports[current-1].DetailInfo(), keyboards.GetUserNavigationButtonsReport(active, current, len(reports)))
 }
