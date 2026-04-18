@@ -76,9 +76,15 @@ func (r *Report) DetailInfo() string {
 
 	sb.WriteString(fmt.Sprintf("📝 Тема: %s\n", r.Subject))
 
-	sb.WriteString(fmt.Sprintf("📄 Описание:%s\n", r.Message))
+	sb.WriteString(fmt.Sprintf("📄 Описание: %s\n", r.Message))
 
 	sb.WriteString(fmt.Sprintf("📅 Создана: %s", r.CreatedAt.Format("02.01.2006 15:04:05")))
+
+	if r.Answer != "" {
+		sb.WriteString("\n\n*💬 ОТВЕТ АДМИНИСТРАТОРА:*")
+		sb.WriteString(fmt.Sprintf("\n%s\n", r.Answer))
+
+	}
 
 	return sb.String()
 }

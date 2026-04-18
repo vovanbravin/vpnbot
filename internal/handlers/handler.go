@@ -51,6 +51,9 @@ func (h *Handler) HandleCallbacks(c tele.Context) error {
 	switch {
 	case strings.HasPrefix(data, "admin_"):
 		return h.HandleAdminCallback(c)
+	case strings.HasPrefix(data, "support_"):
+		return h.HandleSupportCallbacks(c)
+
 	default:
 		return c.Bot().Respond(c.Callback(), &tele.CallbackResponse{Text: message.UnknownCommand})
 	}

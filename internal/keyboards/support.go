@@ -1,6 +1,7 @@
 package keyboards
 
 import (
+	"fmt"
 	"tgbot/internal/message"
 
 	tele "gopkg.in/telebot.v4"
@@ -49,6 +50,57 @@ func GetReportConfirmKeyboard() *tele.ReplyMarkup {
 		markup.Row(btnApprov),
 		markup.Row(btnRestart),
 	)
+
+	return markup
+}
+
+func GetUserReportMenu() *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+
+	btnActive := markup.Data(message.ButtonActiveReports, "support_active_reports")
+	btnClosed := markup.Data(message.ButtonClosedReports, "support_closed_reports")
+
+	markup.Inline(
+		markup.Row(btnActive),
+		markup.Row(btnClosed),
+	)
+
+	return markup
+}
+
+func GetUserNavigationButtonsReport(active bool, current, total int) *tele.ReplyMarkup {
+
+	markup := &tele.ReplyMarkup{}
+
+	var rows []tele.Row
+
+	var status string
+
+	if active {
+		status = "active"
+	} else {
+		status = "closed"
+	}
+
+	var navRow []tele.Btn
+	if current > 1 {
+		btnPrev := markup.Data(message.ButtonPrev, fmt.Sprintf("support_%s_report_%d", status, current-1))
+		navRow = append(navRow, btnPrev)
+	}
+	if current < total {
+		btnNext := markup.Data(message.ButtonNext, fmt.Sprintf("support_%s_report_%d", status, current+1))
+		navRow = append(navRow, btnNext)
+	}
+
+	if len(navRow) > 0 {
+		rows = append(rows, navRow)
+	}
+
+	rows = append(rows, []tele.Btn{
+		markup.Data(message.ButtonMenu, "support_menu"),
+	})
+
+	markup.Inline(rows...)
 
 	return markup
 }

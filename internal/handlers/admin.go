@@ -132,12 +132,14 @@ func (h *Handler) ReportAdminMenu(c tele.Context) error {
 	}
 
 	inProgressCount, err := reportRepo.CountByStatus(ctx, models.ReportStatusInProgress)
+
 	if err != nil {
 		logger.Error("Ошибка подсчёта заявок в работе", "error", err, "admin_id", c.Sender().ID)
 		return c.Send(message.ErrorText + err.Error())
 	}
 
 	resolvedCount, err := reportRepo.CountByStatus(ctx, models.ReportStatusResolved)
+
 	if err != nil {
 		logger.Error("Ошибка подсчёта решённых заявок", "error", err, "admin_id", c.Sender().ID)
 		return c.Send(message.ErrorText + err.Error())
@@ -166,6 +168,7 @@ func (h *Handler) ReportShowAdmin(c tele.Context, status models.ReportStatus, cu
 	reportRepo := repositories.NewReportRepository(h.mongoDb)
 
 	reports, err := reportRepo.GetAllByStatus(ctx, status)
+
 	if err != nil {
 		logger.Error("Ошибка получения заявок", "error", err, "admin_id", c.Sender().ID, "status", status)
 		return c.Send(message.ErrorText + err.Error())
@@ -195,7 +198,7 @@ func (h *Handler) ReportShowAdmin(c tele.Context, status models.ReportStatus, cu
 		"total", len(reports),
 	)
 
-	return c.Edit(report.DetailInfo(), keyboards.GetNavigationButtonsReport(status, current, len(reports)))
+	return c.Edit(report.DetailInfo(), keyboards.GetAdminNavigationButtonsReport(status, current, len(reports)))
 }
 
 func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) error {
@@ -210,6 +213,7 @@ func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) er
 	reportRepo := repositories.NewReportRepository(h.mongoDb)
 
 	reports, err := reportRepo.GetAllByStatus(ctx, status)
+
 	if err != nil {
 		logger.Error("Ошибка получения заявок", "error", err, "admin_id", c.Sender().ID, "status", status)
 		return c.Send(message.ErrorText + err.Error())
@@ -231,7 +235,7 @@ func (h *Handler) ReportAdminList(c tele.Context, status models.ReportStatus) er
 		"total", n,
 	)
 
-	return c.Edit(reports[0].DetailInfo(), keyboards.GetNavigationButtonsReport(status, 1, n))
+	return c.Edit(reports[0].DetailInfo(), keyboards.GetAdminNavigationButtonsReport(status, 1, n))
 }
 
 func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
@@ -247,6 +251,7 @@ func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
 	reportRepo := repositories.NewReportRepository(h.mongoDb)
 
 	reports, err := reportRepo.GetAllByStatus(ctx, models.ReportStatusNew)
+
 	if err != nil {
 		logger.Error("Ошибка получения новых заявок", "error", err, "admin_id", c.Sender().ID)
 		return c.Send(message.ErrorText + err.Error())
@@ -262,9 +267,11 @@ func (h *Handler) ReportAdminHire(c tele.Context, current int) error {
 	}
 
 	report := reports[current-1]
+
 	report.Status = models.ReportStatusInProgress
 
 	err = reportRepo.Update(ctx, report)
+
 	if err != nil {
 		logger.Error("Ошибка обновления статуса заявки",
 			"error", err,
