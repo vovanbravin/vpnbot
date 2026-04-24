@@ -7,9 +7,9 @@ services:
     restart: always
     container_name: vpn-mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: vpnbot
-      MONGO_INITDB_ROOT_PASSWORD: vovan123A
-      MONGO_INITDB_DATABASE: vpn_bot
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     ports:
       - "27017:27017"
     volumes:
@@ -23,12 +23,12 @@ services:
     ports:
       - 8081:8081
     environment:
-        ME_CONFIG_MONGODB_ADMINUSERNAME: vpnbot
-        ME_CONFIG_MONGODB_ADMINPASSWORD: vovan123A
-        ME_CONFIG_MONGODB_URL: mongodb://vpnbot:vovan123A@mongo:27017/
-        ME_CONFIG_BASICAUTH_ENABLED: true
-        ME_CONFIG_BASICAUTH_USERNAME: admin
-        ME_CONFIG_BASICAUTH_PASSWORD: admin123
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: ${ME_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${ME_PASSWORD}
     depends_on:
       - mongo
     networks:
@@ -42,14 +42,13 @@ services:
     restart: always
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
-      MONGO_URL: mongodb://vpnbot:vovan123A@mongo:27017/vpn_bot?authSource=admin
-      MONGO_DB: tgbot
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DATABASE}?authSource=admin
+      MONGO_DB: ${MONGO_DATABASE}
     depends_on:
       - mongo
     networks:
       - vpn-network
     volumes:
-      - ./configs:/app/config
       - ./logs:/app/logs
 
 networks:
