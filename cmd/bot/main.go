@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strconv"
+	"tgbot/internal/client"
 	"tgbot/internal/database"
 	fsm "tgbot/internal/fsm"
 	"tgbot/internal/handlers"
 	"tgbot/internal/logger"
+	"tgbot/internal/utils"
 	"time"
 
 	"github.com/subosito/gotenv"
@@ -22,25 +22,16 @@ func init() {
 	}
 }
 
-func getIntFromEnv(key string) (int, error) {
-	valueStr, exist := os.LookupEnv(key)
-	if !exist {
-		return 0, fmt.Errorf("Key %s not exist", key)
-	}
-
-	return strconv.Atoi(valueStr)
-}
-
 func main() {
 
 	logLevel, _ := os.LookupEnv("LOG_LEVEl")
 
-	maxSize, _ := getIntFromEnv("MAX_SIZE_FILE_LOG")
-	maxBackups, _ := getIntFromEnv("MAX_BACKUPS_LOG")
-	maxAge, _ := getIntFromEnv("MAX_AGE_FILE_LOG")
+	maxSize, _ := utils.GetIntFromEnv("MAX_SIZE_FILE_LOG")
+	maxBackups, _ := utils.GetIntFromEnv("MAX_BACKUPS_LOG")
+	maxAge, _ := utils.GetIntFromEnv("MAX_AGE_FILE_LOG")
 
 	config := logger.Config{
-		FilePath:   "logs/bot.log",
+		FilePath:   "logs/bot.json",
 		Level:      logLevel,
 		MaxSize:    maxSize,
 		MaxBackups: maxBackups,
@@ -54,6 +45,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
+
+	clientConfig, err := utils.Load3xuiClientConfig()
+
+	if err != nil {
+		logger.Error("Error load client config: " + err.Error())
+	}
+
+	client, err := client.NewClient(clientConfig)
 
 	token, exists := os.LookupEnv("BOT_TOKEN")
 
@@ -117,7 +116,7 @@ func main() {
 
 	FSM.Setup(dp)
 
-	h := handlers.New(bot, FSM.Manager, dp, mongoDb)
+	h := handlers.New(bot, FSM.Manager, dp, mongoDb, client)
 	h.Register()
 
 	bot.Start()

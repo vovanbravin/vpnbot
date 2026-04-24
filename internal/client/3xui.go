@@ -19,9 +19,10 @@ type XUIClient struct {
 	timeSession time.Duration
 	username    string
 	password    string
-	Addr        string
-	Pbk         string
-	Sni         string
+	addr        string
+	pbk         string
+	sni         string
+	sid         string
 }
 
 type Config struct {
@@ -33,6 +34,7 @@ type Config struct {
 	Pbk         string
 	Sni         string
 	Timeout     time.Duration
+	Sid         string
 }
 
 func NewClient(config Config) (*XUIClient, error) {
@@ -51,13 +53,14 @@ func NewClient(config Config) (*XUIClient, error) {
 		timeSession: config.TimeSession,
 		username:    config.Username,
 		password:    config.Password,
-		Addr:        config.Addr,
-		Pbk:         config.Pbk,
-		Sni:         config.Sni,
+		addr:        config.Addr,
+		pbk:         config.Pbk,
+		sni:         config.Sni,
+		sid:         config.Sid,
 	}, nil
 }
 
-func (x *XUIClient) login() error {
+func (x *XUIClient) Login() error {
 	url := x.baseUrl + "/login"
 
 	body := map[string]string{
@@ -88,10 +91,10 @@ func (x *XUIClient) login() error {
 	return nil
 }
 
-func (x *XUIClient) addUser(username string, id int) (string, error) {
+func (x *XUIClient) AddUser(username string, id int) (string, error) {
 
 	if time.Now().After(x.lastLogin.Add(x.timeSession)) || x.lastLogin.IsZero() {
-		err := x.login()
+		err := x.Login()
 
 		if err != nil {
 			return "", err
@@ -170,7 +173,7 @@ func (x *XUIClient) addUser(username string, id int) (string, error) {
 		return "", fmt.Errorf(result["msg"].(string))
 	}
 
-	link := fmt.Sprintf("vless://%s@%s/?type=tcp&security=reality&pbk=%s&fp=chrome&sni=%s&sid=d254c83d&spx=/&flow=xtls-rprx-vision#%s", userUUID, x.Addr, x.Pbk, x.Sni, username)
+	link := fmt.Sprintf("vless://%s@%s/?type=tcp&security=reality&pbk=%s&fp=chrome&sni=%s&sid=%s&spx=/&flow=xtls-rprx-vision#%s", userUUID, x.addr, x.pbk, x.sni, x.sid, username)
 
 	return link, err
 }

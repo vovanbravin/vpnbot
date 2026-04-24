@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"strings"
+	"tgbot/internal/client"
 	"tgbot/internal/database"
 	"tgbot/internal/message"
 
@@ -16,14 +17,16 @@ type Handler struct {
 	fsm        *fsm.Manager
 	dispatcher *dispatcher.Dispatcher
 	mongoDb    *database.MongoDB
+	client     *client.XUIClient
 }
 
-func New(bot *tele.Bot, fsm *fsm.Manager, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB) *Handler {
+func New(bot *tele.Bot, fsm *fsm.Manager, dispatcher *dispatcher.Dispatcher, mongoDb *database.MongoDB, client *client.XUIClient) *Handler {
 	return &Handler{
 		bot:        bot,
 		dispatcher: dispatcher,
 		fsm:        fsm,
 		mongoDb:    mongoDb,
+		client:     client,
 	}
 }
 
